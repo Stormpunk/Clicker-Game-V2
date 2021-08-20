@@ -19,6 +19,10 @@ public class GameLogicManager : MonoBehaviour
     //initial value of the click, this will usually be 1
     public float passiveClickValue;
     //Passive amount of clicks per second
+    public int objectiveStar;
+    //a number of objective items the player can purchase with points instead of coins.
+    public int maxObjective;
+    //maximum number of the objective items to trigger an endgame state
     public float clickMultiplier;
     //a fraction of a click that will be added to the base click
     public int numberOfAutoclickers;
@@ -31,12 +35,18 @@ public class GameLogicManager : MonoBehaviour
     };
     //how much things cost
     public float costIncrease = 1.5f;
+    //increases the cost of an item
+    public float passivePointDecay;
+    //at the endgame, the player will need to take steps to prevent points from receding. This is that decay.
+    public bool isEndgameState;
     #endregion
     #region Game Objects
     public Text scoreText;
     public Text cmText;
     public Text ppcText;
     public Text currencyText;
+    public Text objectiveText;
+    public Text passClickText;
     #endregion
     public
     // Start is called before the first frame update
@@ -47,6 +57,10 @@ public class GameLogicManager : MonoBehaviour
         passiveClickValue = 0;
         numberOfAutoclickers = 0;
         numberOfClickMultipliers = 0;
+        objectiveStar = 0;
+        maxObjective = 5;
+        isEndgameState = false;
+        passivePointDecay = score * 0.2f;
     }
 
     // Update is called once per frame
@@ -54,11 +68,22 @@ public class GameLogicManager : MonoBehaviour
     {
         score += passiveClickValue;
         scoreClickValue = baseClickValue + clickMultiplier;
-        scoreText.text = score.ToString() + " Points";
+        score += (numberOfAutoclickers * Time.deltaTime);
+        scoreText.text = Mathf.FloorToInt(score) + " Points";
         cmText.text = "Click Multipliers: " + numberOfClickMultipliers.ToString();
         clickMultiplier = numberOfClickMultipliers * 0.25f;
         ppcText.text = "Points per Click: " + scoreClickValue.ToString();
         currencyText.text = "Currency: " + currency.ToString();
+        objectiveText.text = objectiveStar.ToString() + "Stars / " + maxObjective.ToString();
+        passClickText.text = "Passive Clicks: " + numberOfAutoclickers.ToString() + " Per second";
+        if(objectiveStar >= maxObjective)
+        {
+            isEndgameState = true;
+        }
+        if(isEndgameState == true)
+        {
+            score -= passivePointDecay;
+        }
     }
     public void ClickToScore()
     {
@@ -66,9 +91,13 @@ public class GameLogicManager : MonoBehaviour
     }
     public void BuyPassiveClick()
     {
-        score -= costToUpgrade[1];
-        numberOfAutoclickers++;
-        costToUpgrade[1] *= costIncrease;
+        if (currency >= costToUpgrade[1])
+        {
+            currency -= costToUpgrade[1];
+            numberOfAutoclickers++;
+            costToUpgrade[1] *= costIncrease;
+        }
+        
     }
     public void BuyClickMultiplier()
     {
@@ -102,6 +131,13 @@ public class GameLogicManager : MonoBehaviour
         {
             score -= 100;
             currency += 100;
+        }
+    }
+    public void BuyObjective()
+    {
+        if(score >= 1000)
+        {
+            objectiveStar++;
         }
     }
 }
