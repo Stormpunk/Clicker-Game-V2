@@ -39,6 +39,27 @@ public class GameLogicManager : MonoBehaviour
     public float passivePointDecay;
     //at the endgame, the player will need to take steps to prevent points from receding. This is that decay.
     public bool isEndgameState;
+    //figures out whether or not the decay needs to be triggered
+    public bool isDelaying;
+    //the game will count down a delay when this bool is active
+    public float currentDelayTime;
+    public float maxDelayTime;
+    //the number that the delay timer will reset to
+    public GameObject endGameButton;
+    public float[] isUnlockRequirement =
+    {
+        100, 500, 1000
+    };
+    public float[] isDecayTime =
+    {
+        60,120,180,300
+    };
+    public float[] isDecayValue =
+    {
+        0.01f, 0.05f, 0.2f, 1f
+    };
+    public float currentDecayValue = 0;
+    private bool hasPauseValue;
     #endregion
     #region Game Objects
     public Text scoreText;
@@ -47,6 +68,13 @@ public class GameLogicManager : MonoBehaviour
     public Text currencyText;
     public Text objectiveText;
     public Text passClickText;
+    public GameObject upgradeButtonPC;
+    public GameObject upgradeButtonBO;
+    public GameObject upgradeButtonEG;
+    public GameObject upgradeButtonST;
+    public GameObject winScreen;
+
+
     #endregion
     public
     // Start is called before the first frame update
@@ -60,7 +88,10 @@ public class GameLogicManager : MonoBehaviour
         objectiveStar = 0;
         maxObjective = 5;
         isEndgameState = false;
-        passivePointDecay = score * 0.2f;
+        passivePointDecay = 0.01f;
+        currentDelayTime = 0;
+        maxDelayTime = 10;
+        hasPauseValue = false;
     }
 
     // Update is called once per frame
@@ -74,15 +105,22 @@ public class GameLogicManager : MonoBehaviour
         clickMultiplier = numberOfClickMultipliers * 0.25f;
         ppcText.text = "Points per Click: " + scoreClickValue.ToString();
         currencyText.text = "Currency: " + currency.ToString();
-        objectiveText.text = objectiveStar.ToString() + "Stars / " + maxObjective.ToString();
+        objectiveText.text = "Objective: " + objectiveStar.ToString() + " / " + maxObjective.ToString() + " Stars";
         passClickText.text = "Passive Clicks: " + numberOfAutoclickers.ToString() + " Per second";
-        if(objectiveStar >= maxObjective)
+        if (objectiveStar >= maxObjective)
         {
             isEndgameState = true;
         }
+        if (hasPauseValue == true)
+        {
+            Stall();
+        }
+    }
+    private void FixedUpdate()
+    {
         if(isEndgameState == true)
         {
-            score -= passivePointDecay;
+            score -= (Time.deltaTime);
         }
     }
     public void ClickToScore()
@@ -109,6 +147,15 @@ public class GameLogicManager : MonoBehaviour
         }
         
     }
+    public void BuyTimeStaller()
+    {
+        if(currency >= costToUpgrade[3])
+        {
+            currency -= costToUpgrade[3];
+            hasPauseValue = true;
+            // As the stall is intended to be used often and is a requirement for the endgame, it will not have a cost increase
+        }
+    }
     public void PointsToCurrency10()
     {
         if (score >= 10)
@@ -116,6 +163,7 @@ public class GameLogicManager : MonoBehaviour
             score -= 10;
             currency += 10;
         }
+        CurrencyCheck();
     }
     public void PointsToCurrency50()
     {
@@ -124,6 +172,7 @@ public class GameLogicManager : MonoBehaviour
             score -= 50;
             currency += 50;
         }
+        CurrencyCheck();
     }
     public void PointsToCurrency100()
     {
@@ -132,12 +181,51 @@ public class GameLogicManager : MonoBehaviour
             score -= 100;
             currency += 100;
         }
+        CurrencyCheck();
     }
     public void BuyObjective()
     {
-        if(score >= 1000)
+        if(currency >= costToUpgrade[2] && objectiveStar != maxObjective)
         {
+            currency -= costToUpgrade[2];
             objectiveStar++;
+            costToUpgrade[2] *= costIncrease;
         }
+    }
+    public void CurrencyCheck()
+    {
+        if(currency >= isUnlockRequirement[0])
+        {
+            upgradeButtonPC.SetActive(true);
+        }
+        if(currency >= isUnlockRequirement[1])
+        {
+            upgradeButtonBO.SetActive(true);
+        }
+        if(currency >= isUnlockRequirement[2])
+        {
+            upgradeButtonST.SetActive(true);
+        }
+    }
+    public void EndGame()
+    {
+        winScreen.SetActive(true);
+    }
+   IEnumerator Stall()
+    {
+        Debug.Log("10 Second Pause");
+        yield return new WaitForSeconds(10);
+        Debug.Log("Resuming Decay");
+        hasPauseValue = false;
+    }
+    IEnumerator DecayIncrease()
+    {
+        for (int i = 0; i < isDecayTime.Length; i++)
+        {
+            //Slowly will ramp up the point decay over time
+            yield return new WaitForSeconds(isDecayTime[i]);
+            currentDecayValue = isDecayValue[i];
+        }
+
     }
 }
