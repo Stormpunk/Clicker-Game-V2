@@ -4185,8 +4185,8 @@ MonoBehaviour:
   - 100
   - 500
   - 1000
+  finishCost: 0
   costIncrease: 1.5
-  passivePointDecay: 0
   isEndgameState: 0
   isDelaying: 0
   currentDelayTime: 0
@@ -4196,6 +4196,18 @@ MonoBehaviour:
   - 100
   - 500
   - 1000
+  isDecayTime:
+  - 60
+  - 120
+  - 180
+  - 300
+  isDecayValue:
+  - 1
+  - 2
+  - 10
+  - 20
+  currentDecayValue: 1
+  restartTimer: 5
   scoreText: {fileID: 920295005}
   cmText: {fileID: 381487834}
   ppcText: {fileID: 44932129}
