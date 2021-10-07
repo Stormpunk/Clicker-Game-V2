@@ -75,6 +75,8 @@ public class GameLogicManager : MonoBehaviour
     public Text pcCost;
     public Text objCost;
     public Text stCost;
+    public GameObject endGameText;
+    public GameObject stallText;
 
 
     #endregion
@@ -88,7 +90,7 @@ public class GameLogicManager : MonoBehaviour
         numberOfAutoclickers = 0;
         numberOfClickMultipliers = 0;
         objectiveStar = 0;
-        maxObjective = 5;
+        maxObjective = 7;
         isEndgameState = false;
         currentDelayTime = maxDelayTime;
         maxDelayTime = 10;
@@ -98,40 +100,50 @@ public class GameLogicManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        score += passiveClickValue;
         scoreClickValue = baseClickValue + clickMultiplier;
+        //equation to figure out how many points to award on click
         score += (numberOfAutoclickers * Time.deltaTime);
+        //starts at 0, will add points per second with upgrades
         scoreText.text = Mathf.FloorToInt(score) + " Points";
-        cmText.text = "Click Multipliers: " + numberOfClickMultipliers.ToString();
+        //updates the text with the score value
         clickMultiplier = numberOfClickMultipliers * 0.25f;
-        ppcText.text = "Points per Click: " + scoreClickValue.ToString();
+        //updates the value of click multipliers
+        cmText.text = "Follower Efficiency: " + numberOfClickMultipliers.ToString();
+        ppcText.text = "Follower Efficiency: " + scoreClickValue.ToString();
         currencyText.text = "Currency: " + currency.ToString();
         objectiveText.text = "Objective: " + objectiveStar.ToString() + " / " + maxObjective.ToString() + " Stars";
-        passClickText.text = "Passive Clicks: " + numberOfAutoclickers.ToString() + " Per second";
+        passClickText.text = "Word of Mouth: " + numberOfAutoclickers.ToString() + " Per second";
+        //updates texts with counters for upgrades or score per seconds.
         #region Item Costs
-        cmCost.text = costToUpgrade[0].ToString() + " Gold";
-        pcCost.text = costToUpgrade[1].ToString() + " Gold";
-        objCost.text = costToUpgrade[2].ToString() + " Gold";
-        stCost.text = costToUpgrade[3].ToString() + " Gold";
+        cmCost.text = costToUpgrade[0].ToString() + " Currency";
+        pcCost.text = costToUpgrade[1].ToString() + " Currency";
+        objCost.text = costToUpgrade[2].ToString() + " Currency";
+        stCost.text = costToUpgrade[3].ToString() + " Currency";
+        //Updates the costs of the store items
         #endregion
         if (objectiveStar >= maxObjective)
         {
             isEndgameState = true;
         }
+        //the game will enter the endgame state when the player has reached 7/7 objectives
         if (isEndgameState)
         {
             pointIncreaseTimer += Time.deltaTime;
             oldDecayValue = (pointIncreaseTimer / 10);
+            endGameText.SetActive(true);
         }
+        //decays the players points at a slowly increasing value, along with creating an indication 
         if(isStalling == true && isStalling)
         {
             currentDecayValue = frozenDecayValue;
             currentDelayTime -= Time.deltaTime;
         }
+        //halts the point decay while the stall is active.
         else
         {
             currentDecayValue = oldDecayValue;
         }
+        //returjns the decay value to the pre-stalled value
         if(currentDelayTime<= 0)
         {
             currentDelayTime = 0;
@@ -141,6 +153,7 @@ public class GameLogicManager : MonoBehaviour
             isStalling = false;
             currentDelayTime = maxDelayTime;
         }
+        //resets the delay counter and disables the stalling state.
     }
     private void FixedUpdate()
     {
@@ -148,11 +161,13 @@ public class GameLogicManager : MonoBehaviour
         {
             score -= (currentDecayValue * Time.deltaTime);
         }
+        //decreases the score by the decay value per second if the endgame state is active.
     }
     public void ClickToScore()
     {
         score += scoreClickValue;
     }
+    //points go up when the player clicks the button. Simples!
     #region Buying
     public void BuyPassiveClick()
     {
@@ -164,6 +179,7 @@ public class GameLogicManager : MonoBehaviour
         }
         
     }
+    //buying passive clicks
     public void BuyClickMultiplier()
     {
         if (currency >= costToUpgrade[0])
@@ -174,6 +190,7 @@ public class GameLogicManager : MonoBehaviour
         }
         
     }
+    //buying click multipliers
     public void BuyTimeStaller()
     {
         if(currency >= costToUpgrade[3] && isEndgameState)
@@ -183,6 +200,7 @@ public class GameLogicManager : MonoBehaviour
             // As the stall is intended to be used often and is a requirement for the endgame, it will not have a cost increase
         }
     }
+    //buying the decay stall.
     public void BuyObjective()
     {
         if (currency >= costToUpgrade[2] && objectiveStar != maxObjective)
@@ -192,6 +210,7 @@ public class GameLogicManager : MonoBehaviour
             costToUpgrade[2] *= costIncrease;
         }
     }
+    //adds 1 to the objectives that trigger the endgame state
     #endregion
     #region Points To Currency
     public void PointsToCurrency10()
@@ -240,6 +259,7 @@ public class GameLogicManager : MonoBehaviour
             upgradeButtonEG.SetActive(true);
         }
     }
+    //these functions all convert points to a set amount of currency 
     #endregion
     public void EndGame()
     {
@@ -248,4 +268,5 @@ public class GameLogicManager : MonoBehaviour
             winScreen.SetActive(true);
         }
     }
+    //ends the game if the conditions are met
 }
