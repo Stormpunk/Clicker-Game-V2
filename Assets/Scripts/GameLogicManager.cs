@@ -1,9 +1,7 @@
-﻿using Packages.Rider.Editor;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using System.Net.Sockets;
 using System.Runtime.InteropServices.WindowsRuntime;
-using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -267,6 +265,22 @@ public class GameLogicManager : MonoBehaviour
         {
             winScreen.SetActive(true);
         }
+    }
+
+    public void DebugAdd100()
+    {
+        currency += 100;
+        CurrencyCheck();
+    }
+    public void DebugAdd1000()
+    {
+        currency += 1000;
+        CurrencyCheck();
+    }
+    public void DebugAdd10000()
+    {
+        currency += 10000;
+        CurrencyCheck();
     }
     //ends the game if the conditions are met
 }
